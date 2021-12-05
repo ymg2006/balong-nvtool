@@ -54,7 +54,7 @@ hdr.sig2 = 0x766e;
 // читаем раздел NVIMG
 in=fopen(argv[1],"rb");
 if (in == 0) {
-  printf("\n Ошибка открытия NVIMG-файла %s\n",argv[1]);
+  printf("\n Error opening NVIMG file %s\n",argv[1]);
   exit(0);
 }
 
@@ -68,7 +68,7 @@ fclose(in);
 // читаем раздел XML
 in=fopen(argv[2],"rb");
 if (in == 0) {
-  printf("\n Ошибка открытия XML-файла %s\n",argv[1]);
+  printf("\n Error opening XML file %s\n",argv[1]);
   exit(0);
 }
 
@@ -87,7 +87,7 @@ hdr.start2=hdr.start1+hdr.len1;
 out=fopen("nvdload.nvd","wb");
 fwrite(&hdr,1,0x54,out);
 
-printf("\n Тип    старт    размер\n--------------------------");
+printf("\n Type start size\n--------------------------");
 
 printf("\nNVIMG  %08x  %08x",hdr.start1,hdr.len1);
 fwrite(bufimg,1,hdr.len1,out);
@@ -101,4 +101,3 @@ fwrite(&cs,1,4,out);
 printf("\n");  
 
 }
-
