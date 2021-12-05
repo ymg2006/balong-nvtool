@@ -32,20 +32,20 @@ struct {
 
 
 if (argc != 2) {
-  printf("\n Не указано имя файла - раздела NVRAM\n");
+  printf("\n File name not specified - section NVRAM\n");
   exit(0);
 }
 
 in=fopen(argv[1],"rb");
 if (in == 0) {
-  printf("\n Ошибка открытия файла %s\n",argv[1]);
+  printf("\n File open error %s\n",argv[1]);
   exit(0);
 }
   
 fread(&hdr,1,sizeof(hdr),in);
 printf("\n Тип    старт    размер\n--------------------------");
 if ((hdr.sig1 != 0x766e) || (hdr.sig2 != 0x766e)) {
-  printf("\n Ошибка формата заголовка файла - файл не является разделом прошивки NVDLOAD\n");
+  printf("\n File header format error - file is not a firmware section NVDLOAD\n");
   exit(0);
 }  
 
@@ -64,10 +64,9 @@ fwrite(buf,1,hdr.len2,out);
 fclose(out);
 
 // хвост файла
-printf("\n Хвост: ");
+printf("\n Tail: ");
 while (fread(buf,1,1,in) == 1) printf("%02x ",(uint32_t)buf[0]&0xff);
 
 printf("\n");  
 
 }
-
