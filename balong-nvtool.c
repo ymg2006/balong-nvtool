@@ -18,8 +18,7 @@
 #include "nvid.h"
 #include "nvcrc.h"
 
-// 
-Open Image File nvram
+// Open Image File nvram
 FILE* nvf=0;
 
 int mflag=-1;
@@ -464,8 +463,7 @@ if (dflag != -1) {
      for(i=0;i<nvhd.item_count;i++)  dump_item(itemlist[i].id);
 }
 
-// Bulk import of cells (
-switch -w)
+// Bulk import of cells (switch -w)
 if (strlen(wflag) != 0) {
 check_crcmode();
 mass_import(wflag);
