@@ -18,7 +18,8 @@
 #include "nvid.h"
 #include "nvcrc.h"
 
-// Файл с открытым образом nvram
+// 
+Open Image File nvram
 FILE* nvf=0;
 
 int mflag=-1;
@@ -30,11 +31,11 @@ int aflag=-1;
 int aoff=0;
 char adata[128];
 
-// Смещение до поля CRC в файле
+// Offset to CRC field in file
 uint32_t crcoff;
 
 #ifdef MODEM 
-// флаг прямой работы с nvram-файлом вместо интерфейса ядра
+// flag of direct work with nvram-file instead of kernel interface
 int32_t kernelflag=0;
 int ecall(char* name);
 #endif
@@ -43,18 +44,18 @@ int test_crc();
 void recalc_crc();
 
 //****************************************************************
-//* Проверка допустимости работы с CRC
+//* Checking the admissibility of work с CRC
 //****************************************************************
 void check_crcmode() {
   
 if (crcmode == -1) {
-  printf("\n Неподдерживаемый тип CRC - nvram доступна только для чтения\n");
+  printf("\n Unsupported CRC type - nvram is read-only\n");
   exit(0);
 }
 }
 
 //****************************************************************
-//*   Разбор параметров ключа -m
+//*   Parsing key parameters -m
 //****************************************************************
 void parse_mflag(char* arg) {
   
@@ -63,7 +64,7 @@ char* sptr, *offptr;
 int endflag=0;
 
 if (strlen(arg)>1024) {
-    printf("\nСлишком длинный аргумент ключа -m\n");
+    printf("\nThe argument to the -m switch is too long\n");
     exit(0);
 }    
 strcpy(buf,arg);
@@ -76,10 +77,10 @@ if (sptr != 0) {
   offptr=sptr+1;
   *sptr=0;
   sscanf(buf,"%i",&mflag);
-  // ищем первое двоеточие
+  // looking for the first colon
   sptr=strchr(sptr+1,':');
   if (sptr == 0) {
-    printf("\n - в ключе -m не указано ни одного замещающего байта\n");
+    printf("\n - no replacement bytes are specified in the -m switch\n");
     exit(1);
   }
   *sptr=0;
@@ -87,25 +88,25 @@ if (sptr != 0) {
 }
 
 else {
-  // нет смещения
-  // ищем первое двоеточие
+  // no bias
+  // looking for the first colon
   sptr=strchr(buf,':');
   if (sptr == 0) {
-    printf("\n - в ключе -m не указано ни одного замещающего байта\n");
+    printf("\n - no replacement bytes are specified in the -m switch\n");
     exit(1);
   }
   *sptr=0;
   sscanf(buf,"%i",&mflag);
 }
-sptr++; // на первый байт;
+sptr++; // on the first byte;
 do {
   offptr=sptr;
-  sptr=strchr(sptr,':'); // ищем очередное двоеточие
+  sptr=strchr(sptr,':'); // looking for another colon
   if (sptr != 0) *sptr=0;
   else endflag=1;
   sscanf(offptr,"%x",&mdata[midx]);
   if (mdata[midx] > 0xff) {
-    printf("\n Ошибочный байт 0х%x в ключе -m",mdata[midx]);
+    printf("\n Wrong byte 0X%x in the key-m",mdata[midx]);
     exit(1);
   }
   midx++;
@@ -115,7 +116,7 @@ do {
 
 
 //****************************************************************
-//*   Разбор параметров ключа -a
+//*   Parsing key parameters -a
 //****************************************************************
 void parse_aflag(char* arg) {
   
@@ -123,23 +124,23 @@ char buf[1024];
 char* sptr, *offptr;
 
 if (strlen(arg)>1024) {
-    printf("\nСлишком длинный аргумент ключа -a\n");
+    printf("\nThe argument to the -a switch is too long\n");
     exit(0);
 }    
 strcpy(buf,arg);
 
-// проверяем на наличие байта +
+// check for a byte +
 sptr=strchr(buf,'+');
 
 if (sptr != 0) {
-  // есть смещение
+  // there is an offset
   offptr=sptr+1;
   *sptr=0;
   sscanf(buf,"%i",&aflag);
-  // ищем первое двоеточие
+  // looking for the first colon
   sptr=strchr(sptr+1,':');
   if (sptr == 0) {
-    printf("\n - в ключе -a не указано ни одного замещающего байта\n");
+    printf("\n - no replacement bytes are specified in the -a switch\n");
     exit(1);
   }
   *sptr=0;
@@ -147,17 +148,17 @@ if (sptr != 0) {
 }
 
 else {
-  // нет смещения
-  // ищем первое двоеточие
+  // no bias
+  // looking for the first colon
   sptr=strchr(buf,':');
   if (sptr == 0) {
-    printf("\n - в ключе -a не указано ни одного замещающего байта\n");
+    printf("\n - no replacement bytes are specified in the -a switch\n");
     exit(1);
   }
   *sptr=0;
   sscanf(buf,"%i",&aflag);
 }
-sptr++; // на первый байт;
+sptr++; // on the first byte;
 strncpy(adata,sptr,128);
 }
 
@@ -166,10 +167,10 @@ strncpy(adata,sptr,128);
 //****************************************************************
 void utilheader() {
   
-printf("\n Утилита для редактирования образов NVRAM устройств на чипсете\n"
+printf("\n Utility for editing images of NVRAM devices on a chipset\n"
        " Hisilicon Balong, V1.0.%i (c) forth32, 2016, GNU GPLv3",BUILDNO);
 #ifdef WIN32
-printf("\n Порт для Windows 32bit (c) rust3028, 2017");
+printf("\n Windows 32bit port (c) rust3028, 2017");
 #endif
 printf("\n-------------------------------------------------------------------\n");
 }
@@ -181,26 +182,26 @@ printf("\n-------------------------------------------------------------------\n"
 void utilhelp(char* utilname) {
  
 utilheader();  
-printf("\n Формат командной строки:\n\n\
-%s [ключи] <имя файла-образа NVRAM>\n\n\
- Допустимы следующие ключи:\n\n\
--l       - вывести карту образа NVRAM\n\
--u       - печать уникальных идентификаторов и настроек\n\
--e       - извлечь все ячейки \n\
--x item  - извлечь в файл ячейку item\n\
--d item  - вывести дамп ячейки item (d* - все ячейки)\n\
--r item:file - заменить ячейку item на содержимое файла file\n\n\
--m item[+off]:nn[:nn...] - заменить байты в item на байты, указанные в команде\n\
--a item[+off]:text - записать текстовую строку в item\n\
-        *  если +off не указан - замена начинается с нулевого байта. Смещение задается в hex\n\n\
--i imei    записать новый IMEI\n\
--s serial- записать новый серийный номер\n\
--c       - извлечь все компонентные файлы \n\
--k n     - извлечь все ячейки, относящиеся к компоненте n, в каталог COMPn\n\
--w dir   - импортировать содержимое ячеек из файлов каталога dir/\n\
--b oem|simlock|all - произвести подбор OEM, SIMLOCK или обоих кодов\n"
+printf("\n Command line format:\n\n\
+%s [the keys] <image file name NVRAM>\n\n\
+ The following keys are valid:\n\n\
+-l       - display image map NVRAM\n\
+-u       - printing unique identifiers and settings\n\
+-e       - extract all cells \n\
+-x item  - extract cell item to file\n\
+-d item  - dump cell item (d* - all cells)\n\
+-r item:file - replace item cell with file content file\n\n\
+-m item[+off]:nn[:nn...] - replace bytes in item with bytes specified in the command\n\
+-a item[+off]:text - write a text string в item\n\
+        *  если +off not specified - replacement starts at byte zero. The offset is specified in hex\n\n\
+-i imei    write a new one IMEI\n\
+-s serial- write down the new serial number\n\
+-c       - extract all component files \n\
+-k n     - extract all cells related to component n to directory COMPn\n\
+-w dir   - import cell contents from catalog files dir/\n\
+-b oem|simlock|all - select OEM, SIMLOCK or both codes\n"
 #ifdef MODEM
-"-f      - перезагрузить измененную nvram в память модема\n"
+"-f      - reload the modified nvram into the modem memory\n"
 #endif
 "\n",utilname);
 }
@@ -244,7 +245,7 @@ while ((opt = getopt(argc, argv, "hlucex:d:r:m:b:i:s:a:k:w:f")) != -1) {
 
    case 'f':
 #ifndef MODEM
-     printf("\n На данной платформе ключ -f недопустим\n");
+     printf("\n The -f switch is invalid on this platform\n");
      return;
 #else
      kernelflag=1;
@@ -269,7 +270,7 @@ while ((opt = getopt(argc, argv, "hlucex:d:r:m:b:i:s:a:k:w:f")) != -1) {
 	  break;
 
        default:  
-	  printf("\n - неправильное значение ключа -b\n");
+	  printf("\n - incorrect value for the -b key\n");
           return;
      }
      break;
@@ -323,7 +324,7 @@ while ((opt = getopt(argc, argv, "hlucex:d:r:m:b:i:s:a:k:w:f")) != -1) {
      strcpy(buf,optarg);
      sptr=strchr(buf,':');
      if (sptr == 0) {
-       printf("\n - Не указано имя файла в ключе -r\n");
+       printf("\n - The file name is not specified in the -r switch\n");
        return;
      }
      *sptr=0;
@@ -348,7 +349,7 @@ while ((opt = getopt(argc, argv, "hlucex:d:r:m:b:i:s:a:k:w:f")) != -1) {
 
 if (optind>=argc) {
 #ifndef MODEM    
-    printf("\n - Не файл образа nvram, для подсказки используйте ключ -h\n");
+    printf("\n - Not an nvram image file, use the -h switch for a hint\n");
     return;
 #else
     strcpy(nvfilename,"/mnvm2:0/nv.bin");
@@ -357,36 +358,36 @@ if (optind>=argc) {
 else {
     strcpy(nvfilename,argv[optind]);
 #ifdef MODEM
-    // при работе внутри модема, автоматически устанавливаем флаг прямого доступа при указании входного файла
+    // when working inside the modem, we automatically set the direct access flag when specifying an input file
     if (kernelflag==1) {
-        printf("\n Ключ -f неприменим к явному указанию имени файла");
+        printf("\n The -f switch does not apply to explicitly specifying a filename");
         kernelflag=0;
     }    
 #endif
 }
 
 
-//------------ Разбор nv-файла и выделение из него управлющих структур -----------------------
+//------------ Parsing an nv file and extracting control structures from it -----------------------
 
-// открываем образ nvram
+// open the image nvram
 nvf=fopen(nvfilename,"r+b");
 if (nvf == 0) {
-  printf("\n Файл %s не найден\n",argv[optind]);
+  printf("\n File %s not found\n",argv[optind]);
   return;
 }
 
-// читаем заголовок образа
+// read the image header
 res=fread(&nvhd,1,sizeof(nvhd),nvf);
 if (res != sizeof(nvhd)) {
-  printf("\n - Ошибка чтения файла %s\n",argv[optind]);
+  printf("\n - Error reading file %s\n",argv[optind]);
   return;
 }
 if (nvhd.magicnum != FILE_MAGIC_NUM) {
-  printf("\n - Файл %s не является образом NVRAM\n",argv[optind]);
+  printf("\n - File %s is not an NVRAM image\n",argv[optind]);
   return;
 }
 
-// Определяем тип CRC
+// Determine the type of CRC
 switch (nvhd.crcflag) {
   case 0:
     crcmode=0;
@@ -410,28 +411,28 @@ switch (nvhd.crcflag) {
 
 }
 
-//----- Читаем каталог файлов
+//----- Reading the file directory
 
 fseek(nvf,nvhd.file_offset,SEEK_SET);
 pos=nvhd.ctrl_size;
 
 for(i=0;i<nvhd.file_num;i++) {
- // вынимаем имеющуюся в файле информацию 
+ // we take out the information available in the file 
  fread(&flist[i],1,36,nvf);
- // вычисляем смещение до данных файла
+ // calculate the offset to the file data
  flist[i].offset=pos;
  pos+=flist[i].size;
 }
 
-// получаем смещение до поля CRC
+// get the offset to the field CRC
 crcoff=pos;
 
-//----- Читаем каталог ячеек
+//----- We read the catalog of cells
 fseek(nvf,nvhd.item_offset,SEEK_SET);
 itemlist=malloc(nvhd.item_size);
 fread(itemlist,1,nvhd.item_size,nvf);
 
-// вывод карт и параметров
+// output of maps and parameters
 if (lflag) {
   utilheader();
   print_hd_info();
@@ -440,99 +441,101 @@ if (lflag) {
   return;
 }  
 
-// Вывод уникальных параметров
+// Derivation of unique parameters
 if (uflag) {
   print_data();
   return;
 }  
 
-// извлечение файлов и ячеек
+// extracting files and cells
 if (cflag) extract_files();
 if (eflag) extract_all_item();
 if (kflag != -1) extract_comp_items(kflag);
 if (xflag != -1) {
-  printf("\n Извлекается ячейка %i\n",xflag);
+  printf("\n Retrieving cell %i\n",xflag);
   item_to_file(xflag,"");
 }  
 
-// Просмотр дампа ячеек
+// View cell dump
 if (dflag != -1) {
-  if (dflag != -2) dump_item(dflag); // одна ячейка
+  if (dflag != -2) dump_item(dflag); // one cell
   else 
-  // все ячейки
+  // all cells
      for(i=0;i<nvhd.item_count;i++)  dump_item(itemlist[i].id);
 }
 
-// Массовый импорт ячеек (ключ -w)
+// Bulk import of cells (
+switch -w)
 if (strlen(wflag) != 0) {
 check_crcmode();
 mass_import(wflag);
 }
 
-// Замена ячеек
+// Replacing cells
 if (rflag != -1) {
   check_crcmode();
   len=itemlen(rflag);
   if (len == -1) {
-    printf("\n - Ячейка %i не найдена\n",rflag);
+    printf("\n - Cell %i not found\n",rflag);
     return;
   }  
   in=fopen(rfilename,"rb");
   if (in == 0) {
-    printf("\n - Ошибка открытия файла %s\n",rfilename);
+    printf("\n 
+- Error opening file %s\n",rfilename);
     return;
   }
   fseek(in,0,SEEK_END);
   if (ftell(in) != len) {
-    printf("\n - Размер файла (%u) не соответствует размеру ячейки (%i)\n",(uint32_t)ftell(in),len);
+    printf("\n - File size (%u) does not match cell size (%i)\n",(uint32_t)ftell(in),len);
     return;
   }
   fseek(in,0,SEEK_SET);
   fread(buf,1,len,in);
   save_item(rflag,buf);
-  printf("\n Ячейка %i успешно записана\n",rflag);
+  printf("\n Cell %i was written successfully\n",rflag);
 }
 
-// прямое редактирование ячеек
+// direct cell editing
 if (mflag != -1) {
   check_crcmode();
   len=load_item(mflag,buf);
   if (len == -1) {
-    printf("\n - Ячейка %i не найдена\n",mflag);
+    printf("\n - Cell %i not found\n",mflag);
     return;
   }  
   if ((midx+moff) > len) {
-    printf("\n - превышена длина ячейки %i\n",mflag);
+    printf("\n - cell length %i exceeded\n",mflag);
     return;
   } 
   
   for(i=0;i<midx;i++) buf[moff+i]=mdata[i];
   save_item(mflag,buf);
-  printf("\n Ячейка %i отредактирована\n",mflag);
+  printf("\n Cell %i edited\n",mflag);
  
 }
 
-// Запись текстовых строк в ячейку
+// Writing text strings to a cell
 if (aflag != -1) {
  check_crcmode();
  len=load_item(aflag,buf);
   if (len == -1) {
-    printf("\n - Ячейка %i не найдена\n",mflag);
+    printf("\n - Cell %i not found\n",mflag);
     return;
   }  
   if ((strlen(adata)+aoff) > len) {
-    printf("\n - превышена длина ячейки %i\n",mflag);
+    printf("\n - cell length %i exceeded\n",mflag);
     return;
   } 
   memcpy(buf+aoff,adata,strlen(adata));
   save_item(aflag,buf);
-  printf("\n Ячейка %i отредактирована\n",aflag);
+  printf("\n Cell %i edited\n",aflag);
 }  
 
-// подбор кодов блокировкии
+// selection of lock codes
 if (bflag) {
   if (nvhd.version>121) {
-    printf("\n Вычисление кодов на этой платформе не поддерживается");
+    printf("\n Computing codes is not supported on this platform.");
   }
   else {
    utilheader();
@@ -553,19 +556,19 @@ if (bflag) {
  } 
 }
 
-// запись IMEI
+// IMEI entry
 if (iflag) {
   check_crcmode();
   write_imei(imei);
 }
 
-// запись серийника
+// serial record
 if (sflag) {
   check_crcmode();
   write_serial(serial);
 }
 
-// перевычисление массива КС
+// re-computation of an array КС
 if (crcmode != -1) recalc_crc();
 fclose(nvf);
 
