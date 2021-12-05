@@ -129,7 +129,7 @@ for (i=0;i<blknum;i++) {
   fread(buf,blocksize,1,nvf);
   crc=calc_crc32(buf,blocksize);
   if (crc != csblock[i]) {
-//      printf("\n Блок %i: Ошибка CRC",i);
+//      printf("\n Block %i: Error CRC",i);
      res=-1;
   }   
 }
@@ -177,7 +177,7 @@ for (i=0;i<(crcsize>>2);i++) {
 // пишем массив CRC в файл
 if (memcmp(oldcsblock, csblock, crcsize) != 0) {
   if (fseek(nvf,crcoff+4,SEEK_SET) != 0) 
-    printf("\n ! Ошибка позиционирования к массиву CRC");
+    printf("\n ! Array positioning error CRC");
   else
     fwrite(csblock,crcsize,1,nvf);
 }
@@ -196,7 +196,7 @@ uint32_t crc;
 
 buf=malloc(nvhd.ctrl_size-4);
 if (buf == 0) {
-  printf("\n Ошибка выделения буфера управляющих структур");
+  printf("\n Control structure buffer allocation error");
   exit(1);
 }  
 fseek(nvf,0,SEEK_SET);
