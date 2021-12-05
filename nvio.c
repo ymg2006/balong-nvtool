@@ -45,7 +45,7 @@ int i;
 for (i=0;i<nvhd.file_num;i++) {
   if (flist[i].id == fid) return flist[i].offset;
 }
-printf("\n - Ошибка структуры файла - компоненты #%i не существует\n",fid);
+printf("\n - File structure error - components #%i does not exist\n",fid);
 exit(1);
 }
 
@@ -139,29 +139,29 @@ for (i=0;i<len;i+=16) {
 //**********************************************
 void print_hd_info() {
   
-printf("\n Версия файла NVRAM:       %i (0x%x)",nvhd.version,nvhd.version);
-printf("\n Номер модема:             %i",nvhd.modem_num);
-printf("\n Идентификатор устройства: %s",nvhd.product_version);
-printf("\n Тип CRC:                  ");
+printf("\n File version NVRAM:       %i (0x%x)",nvhd.version,nvhd.version);
+printf("\n Modem number:             %i",nvhd.modem_num);
+printf("\n Device ID: %s",nvhd.product_version);
+printf("\n Type of CRC:                  ");
 switch (crcmode) {
   case 0:
-    printf("Нет");
+    printf("No");
     break;
     
   case 1:
-    printf("Блочная, тип 1");
+    printf("Block, type 1");
     break;
     
   case 3:
-    printf("Блочная, тип 3");
+    printf("Block, type 3");
     break;
     
   case 2:
-    printf("Индивидуальная, тип 8");
+    printf("Individual, type 8");
     break;
     
   default:
-    printf("Неподдерживаемая в этой версии утилиты, тип %x",nvhd.crcflag);
+    printf("Unsupported utility in this version, type %x",nvhd.crcflag);
     break;
 }    
   
@@ -175,14 +175,14 @@ void print_filelist() {
   
 int i;
 
-printf("\n\n --- Каталог файлов ----\n");
-printf("\n ID  позиция   размер  ---имя---\n--------------------------------------");
+printf("\n\n --- File Catalog ----\n");
+printf("\n ID  position size --- name---\n--------------------------------------");
 
 for(i=0;i<nvhd.file_num;i++) {
   printf("\n %2i  %08x  %6i  %s",flist[i].id,flist[i].offset,flist[i].size,flist[i].name);
 }  
   
-printf("\n * Всего файлов: %i\n",nvhd.file_num);
+printf("\n * Total files: %i\n",nvhd.file_num);
 }
   
 //**********************************************
@@ -192,8 +192,8 @@ void print_itemlist() {
   
 int i;
 uint32_t badflag=0;
-printf("\n\n --- Каталог ячеек ----\n");
-printf("\n NVID   FID  позиция   размер  приоритет  имя\n-----------------------------------------------");
+printf("\n\n --- Cell catalog ----\n");
+printf("\n NVID   FID position size priority name\n-----------------------------------------------");
 
 for (i=0;i<nvhd.item_count;i++) {
    printf("\n %-5i  %2i   %08x  %4i    %x   %s",
@@ -206,12 +206,12 @@ for (i=0;i<nvhd.item_count;i++) {
 
 
   if ((crcmode ==2) && !verify_item_crc(itemlist[i].id)) {
-    printf("\n ! ** Ошибка CRC ячейки.\n");
+    printf("\n ! ** Cell CRC error.\n");
     badflag++;
   }   
 }
-printf("\n\n * Всего ячеек: %i\n",nvhd.item_count);
-if ((crcmode == 2) && (badflag != 0)) printf(" ! Ячеек с ошибкой CRC: %i\n",badflag);
+printf("\n\n * Total cells: %i\n",nvhd.item_count);
+if ((crcmode == 2) && (badflag != 0)) printf(" ! Error cells CRC: %i\n",badflag);
     
 }
 
@@ -232,7 +232,7 @@ _mkdir("component");
 #endif
 for(i=0;i<nvhd.file_num;i++) {
  fseek(nvf,flist[i].offset,SEEK_SET);
- printf("\n Извлечение файла %s",flist[i].name);
+ printf("\n Extracting a file %s",flist[i].name);
  sprintf(filename,"component/%s",flist[i].name);
  out=fopen(filename,"wb");
  buf=malloc(flist[i].size);
@@ -255,11 +255,11 @@ int i,fidx;
 
 fidx=fileidx(fn);
 if (fidx == -1) {
-  printf("\n Компоненты %i не существует\n",fn);
+  printf("\n Component %i does not exist\n",fn);
   return;
 }
 
-printf("\n Извлечение ячеек компоненты %i (%s)\n\n",fn,flist[fidx].name);
+printf("\n Extracting Component Cells %i (%s)\n\n",fn,flist[fidx].name);
 sprintf(dirname,"COMP%i/",fn);
 #ifndef WIN32
 mkdir(dirname,0777);
@@ -269,7 +269,7 @@ _mkdir(dirname);
 
 for(i=0;i<nvhd.item_count;i++) {
   if (itemlist[i].file_id != fn) continue;
-  printf("\r Ячейка %i",itemlist[i].id);
+  printf("\r Cell %i",itemlist[i].id);
   item_to_file(itemlist[i].id,dirname);
 }  
 printf("\n\n");
@@ -289,7 +289,7 @@ int32_t fn;
 
 idx=itemidx(item);
 if (idx == -1) {
-    printf("\n - Ячейка %i не найдена\n",item);
+    printf("\n - Cell %i not found\n",item);
     return;
 }
 
@@ -299,12 +299,12 @@ len=itemlist[idx].len;
 fn=itemlist[idx].file_id;
 fidx=fileidx(fn);
 
-printf("\n -- Ячейка # %i: %i байт -- Компонент %i (%s) -- ",item,len,fn,flist[fidx].name);
+printf("\n -- Cell # %i: %i bytes - Component %i (%s) -- ",item,len,fn,flist[fidx].name);
 desc=find_desc(item);
-if (strlen(desc) != 0) printf(" Имя: %s --",desc);
+if (strlen(desc) != 0) printf(" Name: %s --",desc);
 printf("-----\n");
 fdump(buf,len,0,stdout);
-if ((crcmode == 2) && !verify_item_crc(item)) printf("\n ! Ошибка CRC ячейки");
+if ((crcmode == 2) && !verify_item_crc(item)) printf("\n ! Cell CRC error");
 printf("\n");
 }
 
@@ -339,7 +339,7 @@ if (idx == -1) return 0; // не найдена
 fseek(nvf,itemoff_idx(idx),SEEK_SET);
 res=fwrite(buf,itemlist[idx].len,1,nvf);
 if (res != 1) {
-    printf("\nОшибка записи ячейки %i",item);
+    printf("\nCell write error %i",item);
     perror("");
     return 0;
 }    
@@ -361,13 +361,13 @@ int len;
 sprintf(filename,"%s%05i.nvm",prefix,item);
 len=load_item(item,buf);
 if (len == -1) {
-  printf(" -  не найдена\n");
+  printf(" -  not found\n");
   exit(1);
 }  
 out=fopen(filename,"wb");
 fwrite(buf,1,len,out);
 fclose(out);
-if ((crcmode == 2) && !verify_item_crc(item)) printf(" - ошибка CRC\n");
+if ((crcmode == 2) && !verify_item_crc(item)) printf(" - error CRC\n");
 }
 
 //**********************************************
@@ -384,7 +384,7 @@ _mkdir("item");
 #endif
 printf("\n");
 for(i=0;i<nvhd.item_count;i++) {
-  printf("\r Ячейка %i длина %i",itemlist[i].id,itemlist[i].len);
+  printf("\r Cell %i length %i",itemlist[i].id,itemlist[i].len);
   item_to_file(itemlist[i].id,"item/");
 }  
 printf("\n\n");
@@ -402,7 +402,7 @@ FILE* in;
 char ibuf[max_item_len];
 int idx;
 
-printf("\n Импорт ячеек:\n\n");
+printf("\n Importing cells:\n\n");
 for (i=0;i<65536;i++) {
   sprintf(filename,"%s/%05i.nvm",dir,i);
   in=fopen(filename,"rb");
@@ -413,15 +413,15 @@ for (i=0;i<65536;i++) {
   // проверяем параметры ячейки в образе
   idx=itemidx(i);
   if (idx == -1) {
-    printf("\r Ячейка %i не найдена в образе nvram\n",i);
+    printf("\r Cell %i not found in nvram image\n",i);
     continue;
   }  
   if (itemlist[idx].len != fsize) {  
-    printf("\r Ячейка %i: размер ячейки (%i) не соответствует размеру файла (%i)\n",i,itemlist[idx].len,fsize);
+    printf("\r Cell %i: cell size (%i) does not match the file size (%i)\n",i,itemlist[idx].len,fsize);
     continue;
   }  
   // импорт ячейки  
-  printf("\r Ячейка %i: ",i);
+  printf("\r Cell %i: ",i);
   fseek(nvf,itemoff_idx(idx),SEEK_SET);
   fwrite(ibuf,itemlist[idx].len,1,nvf);
   restore_item_crc(i);
@@ -447,7 +447,7 @@ uint8_t hash1[32],hash2[32];
 
 if (flag == 2) item=50503;
 if (itemlen(item) != 128) {
-  printf("\n - Ячейка %i не найдена или повреждена\n",item);
+  printf("\n - Cell %i not found or corrupted\n",item);
   return;
 }
 load_item(item,buf);
@@ -457,7 +457,7 @@ memcpy(hash2,buf+64,32);
 printf("\n");
 for(code=0;code<99999999;code++) {
   if  (code % 1000000 == 0) {
-    printf("\r* Поиск %s-кода: %i%%... ",(flag == 1)?"OEM":"Simlock",code/1000000); 
+    printf("\r* Search for %s-code: %i%%... ",(flag == 1)?"OEM":"Simlock",code/1000000); 
     fflush(stdout);
   }  
   // хеш нашего кода
@@ -472,11 +472,11 @@ for(code=0;code<99999999;code++) {
   SHA256Final(scode,&ctx);
   // сравниваем хеш с лежащим в nvram
   if (memcmp(scode,hash1,32) == 0) {
-    printf("\r Найден %s-код: %08i\n",(flag == 1)?"OEM":"Simlock",code);
+    printf("\r Found %s-code: %08i\n",(flag == 1)?"OEM":"Simlock",code);
     return;
   }
 }  
-printf("\n%s-код не найден\n",(flag == 1)?"OEM":"Simlock");
+printf("\n%s-code not found\n",(flag == 1)?"OEM":"Simlock");
 }
 
 //************************************************
@@ -489,7 +489,7 @@ char cbuf[7];
 int csum;
 
 if (strlen(imei) != 15) {
-  printf("\n Неправильная длина IMEI");
+  printf("\n Wrong length IMEI");
   return;
 }
 
@@ -498,7 +498,7 @@ for (i=0;i<15;i++) {
     binimei[i] = imei[i]-'0'; 
     continue;
   }  
-  printf("\n Неправильный символ в строке IMEI - %c\n",imei[i]);
+  printf("\n Invalid character in string IMEI - %c\n",imei[i]);
   return;
 }
 binimei[15]=0;
@@ -515,15 +515,15 @@ for (i=0;i<13;i+=2) csum += binimei[i];
 if ((((int)csum/10)*10) == csum) csum=0;
 else csum=( (int)csum/10 + 1)*10 - csum;
 if (binimei[14] != csum) {
-  printf("\n IMEI имеет неправильную контрольную сумму !\n Правильный IMEI: ");
+  printf("\n IMEI has an incorrect checksum !\n Correct IMEI: ");
   for (i=0;i<14;i++) printf("%1i",binimei[i]);
   printf("%1i",csum);
   binimei[14]=csum;
-  printf("\n IMEI скорректирован");
+  printf("\n IMEI adjusted");
 }  
 
-if (save_item(0,binimei)) printf("\n IMEI успешно записан\n");
-else printf("\n Ошибка поиска ячейки 0");
+if (save_item(0,binimei)) printf("\n IMEI successfully recorded\n");
+else printf("\n Cell search error 0");
   
 }
   
@@ -538,8 +538,8 @@ void  write_serial(char* serial) {
 //sptr=strchr(serial,0);
 //if (sptr != 0) *sptr=0xff;
 
-if (save_item(6,serial)) printf("\n Серийный номер успешно записан\n");
-else printf("\n Ошибка поиска ячейки 6");
+if (save_item(6,serial)) printf("\n Serial number recorded successfully\n");
+else printf("\n Cell search error 6");
   
 }
 
@@ -626,7 +626,7 @@ if (buf[0] != 0) {
       strncpy(wikey[i],buf+462+i*65,65);
    }
   
-  printf("\n\n *** Параметры Wifi ***\n\n #  SSID                             KEY\n\
+  printf("\n\n *** Options Wifi ***\n\n #  SSID                             KEY\n\
 ----------------------------------------------------------------------------------\n");
   for(i=0;i<wicount;i++) printf("\n %1i  %-32.32s %-32.32s",i,(char*)&wissid[i],(char*)&wikey[i]);
 
@@ -637,7 +637,7 @@ printf("\n");
 // Выделяем CRC заголовка
 if (crcmode == 2) {
   if ((nvhd.ctrl_size-nvhd.item_offset-nvhd.item_size) != 4) 
-                       printf("\n CTRL CRC   : отсутствует поле CRC в заголовке - формат файла неверен"); 
+                       printf("\n CTRL CRC   : missing CRC field in header - file format is incorrect"); 
   else {
    // выделяем CRC управяющей структуры
    fseek(nvf,nvhd.ctrl_size-4,SEEK_SET);
@@ -648,12 +648,12 @@ if (crcmode == 2) {
      printf("\n CTRL CRC    : Error!");
   } 
 }    
-else printf("\n CTRL CRC    : Отсутствует");
+else printf("\n CTRL CRC    : Absent");
 
 // Проверяем CRC области данных
 switch (crcmode) {
   case 0:
-    printf("\n DATA CRC    : Отсутствует");
+    printf("\n DATA CRC    : Absent");
     break;
     
   case 1:
@@ -666,12 +666,12 @@ switch (crcmode) {
     for (i=0;i<nvhd.item_count;i++) {
      if ((crcmode ==2) && !verify_item_crc(itemlist[i].id))  badflag++;
     }   
-    if (badflag != 0) printf("\n DATA CRC    : Ячеек с ошибкой CRC: %i",badflag);
+    if (badflag != 0) printf("\n DATA CRC    : Error cells CRC: %i",badflag);
     else printf("\n DATA CRC    : OK");
     break;
     
   default:
-    printf("\n DATA CRC    : Неподдерживаемый тип");
+    printf("\n DATA CRC    : Unsupported type");
   
 }
 
